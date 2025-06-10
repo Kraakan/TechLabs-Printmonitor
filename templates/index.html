@@ -83,7 +83,8 @@
                 printStatus.style.display = "none";
                 featuredContent.style.display = "block";
             }
-
+            // TODO: Add logic for morning reminder
+            // TODO: Design print queue
             if (!data || !data.printer || data.printer.state === 'IDLE') {
                 showFeaturedContent()
             } else if (data.printer.state === 'finished'.toUpperCase()) {

@@ -16,6 +16,7 @@ class Config:
         self.printer_status = os.getenv('PRINTER_STATUS_ENDPOINT', f'http://{self.printer_ip}/api/v1/status')
         self.printer_job = os.getenv('PRINTER_JOB_ENDPOINT', f'http://{self.printer_ip}/api/v1/job')
         self.log_file = os.getenv('LOG_FILE', 'app.log')
+        self.content_url = os.getenv('USER_CONTENT_URL')
 
         # Load rooms from environment variable as JSON
         rooms_env = os.getenv('ROOMS', '[]')
@@ -55,7 +56,10 @@ def get_context(_debug=False):
     data_api = '/api/data'
     arbs_api = '/api/arbs'
     server = f'http://{server_ip}:{server_port}'
-    def get_featured_content():
+    def get_featured_content(): # TODO: Add features, content
+        # TODO: download list of user content
+        # TODO: download user content
+        # TODO: Choose which content to display
         with open('templates/featuredContent.html', 'r') as file:
             return file.read()
 

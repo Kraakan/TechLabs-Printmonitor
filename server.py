@@ -1,9 +1,9 @@
-# install dependencies from requirements.txt
+# install dependencies from requirements.txt ACTUALLY, DON'T!
 import subprocess
 import logging
 from datetime import datetime
 
-subprocess.run(['pip', 'install', '-r', 'requirements.txt'], check=True)
+# subprocess.run(['pip', 'install', '-r', 'requirements.txt'], check=True)
 
 from flask import Flask, render_template, jsonify, send_from_directory, Response
 from requests.auth import HTTPDigestAuth
@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ElementTree
 from config import config, get_server_ip, get_context
 
 
-debug = False  # True
+debug = True # False
 
 class CustomFormatter(logging.Formatter):
     # Define color codes
