@@ -44,6 +44,20 @@ def get_server_ip():
                 return ip_address
     return "127.0.0.1"
 
+def get_featured_content(): # TODO: Add features, content
+    # TODO: Choose which content to display
+    # TODO: Display selected content
+    featured_content = None
+    if featured_content:
+        div_open = "<div class='feat-cont'>"
+        img_src_open = "<img src='"
+        img_src_close = "' style='margin-top: 20px; max-width: 600px; max-height: 500px; height: auto; width: auto;'>"
+        div_close = "</div>"
+
+        return div_open + img_src_open + featured_content + img_src_close + div_close
+    else:    
+        with open('templates/featuredContent.html', 'r') as file:
+            return file.read()
 
 # Get the context for the index.html template
 def get_context(_debug=False):
@@ -56,12 +70,7 @@ def get_context(_debug=False):
     data_api = '/api/data'
     arbs_api = '/api/arbs'
     server = f'http://{server_ip}:{server_port}'
-    def get_featured_content(): # TODO: Add features, content
-        # TODO: download list of user content
-        # TODO: download user content
-        # TODO: Choose which content to display
-        with open('templates/featuredContent.html', 'r') as file:
-            return file.read()
+
 
     context = {
         'server': server,
@@ -74,5 +83,5 @@ def get_context(_debug=False):
     }
     if _debug:
         print('context printer url ', context['printer_status_url'])
-        print(context)
+        #print(context)
     return context

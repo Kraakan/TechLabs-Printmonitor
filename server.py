@@ -10,6 +10,10 @@ from requests.auth import HTTPDigestAuth
 from camera import Camera
 import requests
 import xml.etree.ElementTree as ElementTree
+import json
+import asyncio
+from pathlib import Path
+
 from config import config, get_server_ip, get_context
 
 
@@ -59,6 +63,10 @@ def add_header(r):
 def entrypoint():
     context = get_context(_debug=debug)
     logger.debug('Rendering index with context:', context)
+    # TODO: Move these calls off the endpoint
+    data = download_json(config.content_url + "/api/memes/")
+    if data:
+        asyncio.run(download_approved_content(data))
     return render_template("index.html", **context)
 
 
@@ -177,6 +185,54 @@ def parse_bookings_from_xml(filename):
         logger.error(ex)
         return [{'error': 'no bookings available'}]
 
+def download_json(url):
+    try:
+        response = requests.get(url)
+        logger.debug(f'Fetching data from {url}')
+        logger.debug(f'Response: {response.content}')
+        response.raise_for_status()
+
+        json_data = response.json()
+        return json_data
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Request to {url} failed:', e)
+        return False
+
+async def download_file(url, permitted_extensions=['jpg', 'jpeg', 'png', 'gif']):
+    filename = url.split('/')[-1]
+    extension = filename.split('.')[-1]
+    if extension in permitted_extensions:
+        try:
+            response = requests.get(url)
+            logger.debug(f'Fetching data from {url}')
+            logger.debug(f'Response: {response.content}')
+            response.raise_for_status()
+            if debug:
+                print(response.status_code)
+            with open(f'static/content/{filename}', 'wb') as outfile:
+                outfile.write(response.content)
+        except requests.exceptions.RequestException as e:
+            logger.error(f'Request to {url} failed:', e)
+            return False
+    else:
+        print('DENIED! Only the following file extensions are allowed:', permitted_extensions)
+
+
+async def download_approved_content(json_data):
+    for item in json_data:
+        if item['approved']:
+            filename = item['filename']
+            if debug:
+                print("Approved file:", filename)
+            # First, check if the file has been downloaded already!
+            filepath = Path("static/content/" + filename)
+            if debug:
+                print(str(filepath))
+            if filepath.exists():
+                if debug:
+                    print("File exists:", filename)
+            else:
+                await download_file(config.content_url + "/static/"  + filename)
 
 @app.route('/api/arbs')
 def get_bookings():
