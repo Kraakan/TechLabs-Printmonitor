@@ -61,12 +61,12 @@ def add_header(r):
 
 @app.route("/")
 def entrypoint():
-    context = get_context(_debug=debug)
-    logger.debug('Rendering index with context:', context)
     # TODO: Move these calls off the endpoint
     data = download_json(config.content_url + "/api/memes/")
     if data:
         asyncio.run(download_approved_content(data))
+    context = get_context(_debug=debug)
+    logger.debug('Rendering index with context:', context)
     return render_template("index.html", **context)
 
 
@@ -185,14 +185,29 @@ def parse_bookings_from_xml(filename):
         logger.error(ex)
         return [{'error': 'no bookings available'}]
 
-def download_json(url):
+def download_json(url):# TODO: Don't reset dates to "pending"
     try:
         response = requests.get(url)
         logger.debug(f'Fetching data from {url}')
         logger.debug(f'Response: {response.content}')
         response.raise_for_status()
 
-        json_data = response.json()
+        response_data = response.json()
+        try:
+            json_data_file = open("static/content/meme_data.json", "r")
+            json_data = json.load(json_data_file)
+            json_data_file.close()
+            for response_item in response_data: # This ugly loop is to prevent the "last featured" date from being overwritten
+                if response_item["featured"] == "pending":
+                    for json_item in json_data:
+                        if response_item["filename"] == json_item["filename"]:
+                            if json_item["featured"]:
+                                response_item["featured"] = json_item["featured"]
+        except(FileNotFoundError):
+            print("No previous meme data on file.")
+        json_data_file = open("static/content/meme_data.json", "w")
+        json.dump(response_data, json_data_file, indent=4)
+        json_data_file.close()
         return json_data
     except requests.exceptions.RequestException as e:
         logger.error(f'Request to {url} failed:', e)

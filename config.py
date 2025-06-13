@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 import json
-
+import datetime
+from pathlib import Path
 
 class Config:
     def __init__(self):
@@ -44,10 +45,10 @@ def get_server_ip():
                 return ip_address
     return "127.0.0.1"
 
-def get_featured_content(): # TODO: Add features, content
+def get_featured_content(featured_content = None): # TODO: Add features, content
     # TODO: Choose which content to display
     # TODO: Display selected content
-    featured_content = None
+    
     if featured_content:
         div_open = "<div class='feat-cont'>"
         img_src_open = "<img src='"
@@ -58,6 +59,60 @@ def get_featured_content(): # TODO: Add features, content
     else:    
         with open('templates/featuredContent.html', 'r') as file:
             return file.read()
+
+def select_meme():
+    try:
+        json_data_file = open("static/content/meme_data.json", "r")
+        json_data = json.load(json_data_file)
+        json_data_file.close()
+        featured_dict = {}
+        approved_dict = {}
+        for key, item in enumerate(json_data):
+            if item['featured']:
+                featured_dict[key] = item
+            elif item['approved']:
+                approved_dict[key] = item
+        datestring_today = str(datetime.datetime.now()).split()[0]
+        oldest_rerun = datetime.datetime.strptime(datestring_today, "%Y-%m-%d")
+        oldest_rerun_index = None
+        chosen_filename = None
+        if len(featured_dict) > 0:
+            for key, item in featured_dict.items():
+                feature_date = item['featured']
+                if feature_date != "pending":
+                    if feature_date == datestring_today:
+                        chosen_filename = item['filename']
+                        print("Today's feature features on!")
+                        return "static/content/" + chosen_filename
+                    else:
+                        last_featured_date = datetime.datetime.strptime(item["featured"], "%Y-%m-%d")
+                        if last_featured_date < oldest_rerun:
+                            oldest_rerun = last_featured_date
+                            oldest_rerun_index = key
+                else:
+                    json_data[key]['featured'] = datestring_today
+                    json_data_file = open("static/content/meme_data.json", "w")
+                    json.dump(json_data, json_data_file, indent=4)
+                    json_data_file.close()
+                    filepath = Path("static/content/" + json_data[key]['filename'])
+                    if filepath.exists() and not chosen_filename:
+                        chosen_filename = json_data[key]['filename']
+                        print("Here's a new feature!")
+                        return "static/content/" + chosen_filename
+        if len(approved_dict) > 0: # TODO: TEST!
+            for key, item in approved_dict.items():
+                json_data[key]['featured'] = datestring_today
+                json_data_file = open("static/content/meme_data.json", "w")
+                json.dump(json_data, json_data_file, indent=4)
+                json_data_file.close()
+                print("This one should be OK.")
+                return "static/content/" + approved_dict[key]['filename']
+        json_data[oldest_rerun_index]['featured'] = datestring_today
+        print("An old favorite returns")
+        return "static/content/" + json_data[oldest_rerun_index]['filename']
+    except(FileNotFoundError):
+        print("No meme data found.")
+    return None
 
 # Get the context for the index.html template
 def get_context(_debug=False):
@@ -71,11 +126,14 @@ def get_context(_debug=False):
     arbs_api = '/api/arbs'
     server = f'http://{server_ip}:{server_port}'
 
+    featured_content = select_meme()
+    # TODO: add image to featured content
+    
 
     context = {
         'server': server,
         'rooms': config.rooms,
-        'featuredContent': get_featured_content(),
+        'featuredContent': get_featured_content(featured_content),
         'image_url': f"{server}{image_api}",
         'printer_status_url': f"{server}{data_api}",
         'arbs_url': f"{server}{arbs_api}",
