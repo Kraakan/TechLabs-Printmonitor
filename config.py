@@ -83,7 +83,7 @@ def select_meme():
                     if feature_date == datestring_today:
                         chosen_filename = item['filename']
                         print("Today's feature features on!")
-                        return "static/content/" + chosen_filename
+                        return "static/content/images/" + chosen_filename
                     else:
                         last_featured_date = datetime.datetime.strptime(item["featured"], "%Y-%m-%d")
                         if last_featured_date < oldest_rerun:
@@ -94,11 +94,11 @@ def select_meme():
                     json_data_file = open("static/content/meme_data.json", "w")
                     json.dump(json_data, json_data_file, indent=4)
                     json_data_file.close()
-                    filepath = Path("static/content/" + json_data[key]['filename'])
+                    filepath = Path("static/content/images/" + json_data[key]['filename'])
                     if filepath.exists() and not chosen_filename:
                         chosen_filename = json_data[key]['filename']
                         print("Here's a new feature!")
-                        return "static/content/" + chosen_filename
+                        return "static/content/images/" + chosen_filename
         if len(approved_dict) > 0: # TODO: TEST!
             for key, item in approved_dict.items():
                 json_data[key]['featured'] = datestring_today
@@ -106,10 +106,10 @@ def select_meme():
                 json.dump(json_data, json_data_file, indent=4)
                 json_data_file.close()
                 print("This one should be OK.")
-                return "static/content/" + approved_dict[key]['filename']
+                return "static/content/images/" + approved_dict[key]['filename']
         json_data[oldest_rerun_index]['featured'] = datestring_today
         print("An old favorite returns")
-        return "static/content/" + json_data[oldest_rerun_index]['filename']
+        return "static/content/images/" + json_data[oldest_rerun_index]['filename']
     except(FileNotFoundError):
         print("No meme data found.")
     return None

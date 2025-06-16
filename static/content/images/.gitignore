@@ -2,5 +2,3 @@
 *
 # Except these files
 !.gitignore
-!images/
-!stl_files/

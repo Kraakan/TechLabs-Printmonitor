@@ -13,9 +13,13 @@ import xml.etree.ElementTree as ElementTree
 import json
 import asyncio
 from pathlib import Path
+import time
+import atexit
+import sys
 
 from config import config, get_server_ip, get_context
 
+content_manager = subprocess.Popen(["python3", "content_manager.py"])
 
 debug = True # False
 
@@ -61,10 +65,8 @@ def add_header(r):
 
 @app.route("/")
 def entrypoint():
-    # TODO: Move these calls off the endpoint
-    data = download_json(config.content_url + "/api/memes/")
-    if data:
-        asyncio.run(download_approved_content(data))
+    # TODO: Open json files
+    
     context = get_context(_debug=debug)
     logger.debug('Rendering index with context:', context)
     return render_template("index.html", **context)
@@ -104,7 +106,6 @@ def get_data():
         logger.error('Could not connect to printer:', e)
         return jsonify({'error': 'Could not connect to printer',
                         'printer': {'state': 'IDLE', 'display_name': 'Could not connect to printer'}})
-
 
 def fetch_and_save_arbs_data(url, filename):
     try:
@@ -159,7 +160,6 @@ def fetch_and_save_assets_data(url, filename):
         logger.error(f'Request to {url} failed:', e)
         return False
 
-
 def get_room_id(element, config):
     if 'room_id' in element.attrib:
         return element.attrib['room_id']
@@ -185,70 +185,6 @@ def parse_bookings_from_xml(filename):
         logger.error(ex)
         return [{'error': 'no bookings available'}]
 
-def download_json(url):# TODO: Don't reset dates to "pending"
-    try:
-        response = requests.get(url)
-        logger.debug(f'Fetching data from {url}')
-        logger.debug(f'Response: {response.content}')
-        response.raise_for_status()
-
-        response_data = response.json()
-        try:
-            json_data_file = open("static/content/meme_data.json", "r")
-            json_data = json.load(json_data_file)
-            json_data_file.close()
-            for response_item in response_data: # This ugly loop is to prevent the "last featured" date from being overwritten
-                if response_item["featured"] == "pending":
-                    for json_item in json_data:
-                        if response_item["filename"] == json_item["filename"]:
-                            if json_item["featured"]:
-                                response_item["featured"] = json_item["featured"]
-        except(FileNotFoundError):
-            print("No previous meme data on file.")
-        json_data_file = open("static/content/meme_data.json", "w")
-        json.dump(response_data, json_data_file, indent=4)
-        json_data_file.close()
-        return json_data
-    except requests.exceptions.RequestException as e:
-        logger.error(f'Request to {url} failed:', e)
-        return False
-
-async def download_file(url, permitted_extensions=['jpg', 'jpeg', 'png', 'gif']):
-    filename = url.split('/')[-1]
-    extension = filename.split('.')[-1]
-    if extension in permitted_extensions:
-        try:
-            response = requests.get(url)
-            logger.debug(f'Fetching data from {url}')
-            logger.debug(f'Response: {response.content}')
-            response.raise_for_status()
-            if debug:
-                print(response.status_code)
-            with open(f'static/content/{filename}', 'wb') as outfile:
-                outfile.write(response.content)
-        except requests.exceptions.RequestException as e:
-            logger.error(f'Request to {url} failed:', e)
-            return False
-    else:
-        print('DENIED! Only the following file extensions are allowed:', permitted_extensions)
-
-
-async def download_approved_content(json_data):
-    for item in json_data:
-        if item['approved']:
-            filename = item['filename']
-            if debug:
-                print("Approved file:", filename)
-            # First, check if the file has been downloaded already!
-            filepath = Path("static/content/" + filename)
-            if debug:
-                print(str(filepath))
-            if filepath.exists():
-                if debug:
-                    print("File exists:", filename)
-            else:
-                await download_file(config.content_url + "/static/"  + filename)
-
 @app.route('/api/arbs')
 def get_bookings():
     filename = 'arbs.xml'
@@ -270,9 +206,20 @@ def video_feed():
         logger.error('Could not get video feed:', e)
         return send_from_directory("images", "arcada-logo.png")
 
-
+# https://stackoverflow.com/questions/320232/ensuring-subprocesses-are-dead-on-exiting-python-program
+def cleanup():
+    timeout_sec = 5
+    p_sec = 0
+    for second in range(timeout_sec):
+        if content_manager.poll() == None:
+            time.sleep(1)
+            p_sec += 1
+    if p_sec >= timeout_sec:
+        content_manager.kill() # supported from python 2.6
+    print('cleaned up!')
 
 if __name__ == "__main__":
     logger.info(f'Servers public IP4: {get_server_ip()}:{config.server_port}')
     port = config.server_port_debug if debug else config.server_port
     app.run(host="0.0.0.0", port=port, debug=False)
+    atexit.register(cleanup)
