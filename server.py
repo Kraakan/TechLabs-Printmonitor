@@ -65,8 +65,6 @@ def add_header(r):
 
 @app.route("/")
 def entrypoint():
-    # TODO: Open json files
-    
     context = get_context(_debug=debug)
     logger.debug('Rendering index with context:', context)
     return render_template("index.html", **context)

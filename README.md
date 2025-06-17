@@ -9,6 +9,7 @@ a prusalink data fetcher and a front-end for displaying the data from the differ
 On top of the camera implementation, the server script also grabs data 
 from a prusa mk4 printer on the same local network to display the current status 
 of the printer as well as some additional information about the print job.
+A subprocess will run content_manager.py to download approved featured content and printer jobs.
 
 ## Requirements ##
 You need flask for the server to work
@@ -29,6 +30,7 @@ You need opencv2 for the camera to work
 > ROOMS=["F363", "F364", "F365", "F367", "F368", "F370"]
 > ARBS_URL="https://..."
 > ASSETS_URL="https://.../bookings.xml"
+> USER_CONTENT_URL=WHERE_YOU_RUN_CONTENT_APP
 >```
 > Also note that the IP of the server computer (where you run this script) is intended to be detected 
 > and injected automatically into the front-end.
@@ -45,6 +47,9 @@ http://YOUR_SERVER_IP:5000
 ## Structure ##
 The latest image is saved in `/images/last.png`
 The template file for the front-end is inside `templates/index.html`
+Donloaded images are saved in `/static/content/images`
+Donloaded printer jobs are saved in `/static/content/stl_files`
+Print jobs must be sliced and printed manually.
 
 ## Endpoints ##
 The flask server hosts the following enpoints:
@@ -66,5 +71,5 @@ Z-height: in mm
 ```
 The front-end refreshes every 20 seconds, fetching both a new image and info about the job.
 
-Featured content (the information displayed when the printer is idle) is fetched once when the server starts. 
-If you want to display dynamic content, you need to rewrite the server code.
+Featured content (the information displayed when the printer is idle) is fetched every 59 seconds by a subrocess running content_manager.py
+The content to be donwloaded and shown is controlled through a separate content manager app.

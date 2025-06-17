@@ -27,14 +27,14 @@ def download_json(url, data_path):
         json_data_file = open(data_path, "w")
         json.dump(response_data, json_data_file, indent=4)
         json_data_file.close()
-        return json_data
+        return response_data
     except requests.exceptions.RequestException as e:
         return False
 
 async def download_file(url, target_dir, permitted_extensions):
     filename = url.split('/')[-1]
     extension = filename.split('.')[-1]
-    if extension in permitted_extensions:
+    if extension.lower() in permitted_extensions:
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -71,4 +71,4 @@ def check_for_updates():
 if __name__ == "__main__":
     while True:
         check_for_updates()
-        time.sleep(55)
+        time.sleep(59)
