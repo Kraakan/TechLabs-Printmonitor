@@ -1,21 +1,24 @@
-# install dependencies from requirements.txt ACTUALLY, DON'T!
 import subprocess
 import logging
 from datetime import datetime
+import sys
+from pathlib import Path
+import time
+import atexit
+import json
+import asyncio
 
-# subprocess.run(['pip', 'install', '-r', 'requirements.txt'], check=True)
+# install dependencies from requirements.txt
+try:
+    subprocess.run(['pip', 'install', '-r', 'requirements.txt'], check=True)
+except:
+    print("Installation of requirements failed. You may need to install them manuially.")
 
 from flask import Flask, render_template, jsonify, send_from_directory, Response
 from requests.auth import HTTPDigestAuth
 from camera import Camera
 import requests
 import xml.etree.ElementTree as ElementTree
-import json
-import asyncio
-from pathlib import Path
-import time
-import atexit
-import sys
 
 from config import config, get_server_ip, get_context
 
