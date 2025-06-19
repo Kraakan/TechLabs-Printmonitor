@@ -2,6 +2,7 @@
 This software is intended to be run on any machine on the same LAN as a PrusaLink enabled printer.
 The use case is a simple data consolidator for an infoscreen for a 3D printer.
 The infoscreen (front-end) displays a webcam feed and some data on the current print job.
+This fork adds integration with TechLabs-Printmonitor-ContentApp (to be ran on a separate machine) for user-submitted featured content and 3D-printing projects.
 
 ## Components ##
 It contains a flask webserver, an opencv webcam frame capturer, 
