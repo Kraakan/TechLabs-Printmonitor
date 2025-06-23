@@ -45,6 +45,10 @@ and you'll find the output in `nohup.out`
 After starting the server you can access the front end on:
 http://YOUR_SERVER_IP:5000
 
+## Content-manager app ##
+Follow instructions at:
+`https://github.com/Kraakan/TechLabs-Printmonitor-ContentApp`
+
 ## Structure ##
 The latest image is saved in `/images/last.png`
 The template file for the front-end is inside `templates/index.html`

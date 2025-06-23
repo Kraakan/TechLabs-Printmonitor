@@ -41,7 +41,7 @@ async def download_file(url, target_dir, permitted_extensions):
             with open(f'static/content/{target_dir}{filename}', 'wb') as outfile:
                 outfile.write(response.content)
         except requests.exceptions.RequestException as e:
-            preint(e)
+            print(e)
             return False
     else:
         print('DENIED! Only the following file extensions are allowed:', permitted_extensions)

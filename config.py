@@ -50,9 +50,9 @@ def get_featured_content(featured_content = None): # TODO: Add features, content
     # TODO: Display selected content
     
     if featured_content:
-        div_open = "<div class='feat-cont'>"
+        div_open ="<div class='feat-cont'> <h1>Todays meme:</h1>"
         img_src_open = "<img src='"
-        img_src_close = "' style='margin-top: 20px; max-width: 600px; max-height: 500px; height: auto; width: auto;'>"
+        img_src_close = "' style='margin-top: 20px; max-width: 600px; max-height: 350px; height: auto; width: auto;'>"
         div_close = "</div>"
 
         return div_open + img_src_open + featured_content + img_src_close + div_close
