@@ -48,6 +48,7 @@ http://YOUR_SERVER_IP:5000
 ## Content-manager app ##
 Follow instructions at:
 `https://github.com/Kraakan/TechLabs-Printmonitor-ContentApp`
+Note that the IP of the machine where you will run the content-manager app will need to be saved in your .env file as USER_CONTENT_URL (see above)
 
 ## Structure ##
 The latest image is saved in `/images/last.png`
